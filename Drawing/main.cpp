@@ -29,8 +29,16 @@ int main()
 	DrawingUI   drawingUI(Vector2f(200, 50));
 	
 	// ********* Add code here to make the managers read from shapes file (if the file exists)
+	fstream binFile;
+	binFile.open("shapes.bin", ios::in | ios::binary);
+	if (binFile)
+	{
+		settingsMgr.loadFile(binFile);
+		shapeMgr.loadFile(binFile);
+	}
 
-	while (window.isOpen()) 
+	binFile.close();
+	while (window.isOpen())
 	{
 		Event event;
 		while (window.pollEvent(event))
@@ -38,27 +46,31 @@ int main()
 			if (event.type == Event::Closed)
 			{
 				window.close();
-				// ****** Add code here to write all data to shapes file
+
+				binFile.open("shapes.bin", ios::out | ios::binary);
+				if (binFile)
+				{
+					settingsMgr.saveFile(binFile);
+					shapeMgr.saveFile(binFile);
+				}
 			}
 			else if (event.type == Event::MouseButtonReleased)
 			{
-				// maybe they just clicked on one of the settings "buttons"
-				// check for this and handle it.
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
 				settingsUI.handleMouseUp(mousePos);
 			}
 			else if (event.type == Event::MouseMoved && Mouse::isButtonPressed(Mouse::Button::Left))
 			{
-				
+
 				Vector2f mousePos = window.mapPixelToCoords(Mouse::getPosition(window));
-				// check to see if mouse is in the drawing area
 				if (drawingUI.isMouseInCanvas(mousePos))
 				{
-					// add a shape to the list based on current settings
 					shapeMgr.addShape(mousePos, settingsMgr.getCurShape(), settingsMgr.getCurColor());
 				}
 			}
 		}
+	
+	
 
 		// The remainder of the body of the loop draws one frame of the animation
 		window.clear();
